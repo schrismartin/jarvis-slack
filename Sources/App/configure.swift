@@ -1,4 +1,4 @@
-import FluentSQLite
+import FluentPostgreSQL
 import Vapor
 
 /// Called before your application initializes.
@@ -9,8 +9,10 @@ public func configure(
     _ env: inout Environment,
     _ services: inout Services
 ) throws {
+    
     /// Register providers first
-    try services.register(FluentSQLiteProvider())
+    let postgresProvider = FluentPostgreSQLProvider()
+    try services.register(postgresProvider)
 
     /// Register routes to the router
     let router = EngineRouter.default()
@@ -18,30 +20,49 @@ public func configure(
     services.register(router, as: Router.self)
 
     /// Register middleware
-    var middlewares = MiddlewareConfig() // Create _empty_ middleware config
-    /// middlewares.use(FileMiddleware.self) // Serves files from `Public/` directory
-    middlewares.use(DateMiddleware.self) // Adds `Date` header to responses
-    middlewares.use(ErrorMiddleware.self) // Catches errors and converts to HTTP response
+    var middlewares = MiddlewareConfig()
+    middlewares.use(DateMiddleware.self)
+    middlewares.use(ErrorMiddleware.self)
     services.register(middlewares)
 
-    // Configure a SQLite database
-    let sqlite: SQLiteDatabase
-    if env.isRelease {
-        /// Create file-based SQLite db using $SQLITE_PATH from process env
-        sqlite = try SQLiteDatabase(storage: .file(path: Environment.get("SQLITE_PATH")!))
-    } else {
-        /// Create an in-memory SQLite database
-        sqlite = try SQLiteDatabase(storage: .memory)
-    }
+    try configureDatabase(using: env, for: &services)
+}
 
-    /// Register the configured SQLite database to the database config.
+fileprivate func configureDatabase(using env: Environment, for services: inout Services) throws {
+    
+    let database = try createDatabase(for: env)
     var databases = DatabaseConfig()
-    databases.add(database: sqlite, as: .sqlite)
+    databases.add(database: database, as: .psql)
     services.register(databases)
-
-    /// Configure migrations
-    var migrations = MigrationConfig()
-    migrations.add(model: Todo.self, database: .sqlite)
+    
+    let migrations = MigrationConfig()
+    //    migrations.add(model: Todo.self, database: .psql)
     services.register(migrations)
+}
 
+fileprivate func createDatabase(for env: Environment) throws -> PostgreSQLDatabase {
+    
+    if env.isRelease {
+        
+        guard let databaseURL = Environment.get(Constants.Environment.databaseURL) else {
+            throw ServiceError(
+                identifier: "Environmnent",
+                reason: "Env variable \(Constants.Environment.databaseURL) does not exist"
+            )
+        }
+        
+        let config = try PostgreSQLDatabaseConfig(url: databaseURL)
+        return PostgreSQLDatabase(config: config)
+    }
+    else {
+        
+        let config = PostgreSQLDatabaseConfig(
+            hostname: "localhost",
+            username: "vapor",
+            database: "vapor",
+            password: "password"
+        )
+        
+        return PostgreSQLDatabase(config: config)
+    }
 }
