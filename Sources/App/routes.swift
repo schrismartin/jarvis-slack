@@ -9,8 +9,7 @@ public func routes(_ router: Router) throws {
     router.get("hello") { req in
         return "Hello, world!"
     }
-
-    // Example of configuring a controller
-//    let todoController = TodoController()
-//    router.register(collection: todoController)
+    
+    let eventController = EventController()
+    try router.register(collection: eventController)
 }

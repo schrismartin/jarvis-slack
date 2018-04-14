@@ -10,4 +10,5 @@ import Foundation
 extension Constants.Environment {
     
     static let databaseURL = "DATABASE_URL"
+    static let slackToken = "SLACK_TOKEN"
 }
