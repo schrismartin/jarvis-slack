@@ -28,11 +28,14 @@ extension PostgreSQLDatabaseConfig {
             )
         }
         
+        let disallowedCharacterSet = CharacterSet(charactersIn: "/")
+        let database = url.path.trimmingCharacters(in: disallowedCharacterSet)
+        
         self.init(
             hostname: hostname,
             port: url.port ?? 5432,
             username: username,
-            database: String(url.path.dropFirst()),
+            database: database,
             password: url.password
         )
     }
