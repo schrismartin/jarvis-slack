@@ -44,14 +44,17 @@ fileprivate func createDatabase(for env: Environment) throws -> PostgreSQLDataba
     
     if env.isRelease {
         
-        guard let databaseURL = Environment.get(Constants.Environment.databaseURL) else {
+        guard
+            let urlString = Environment.get(Constants.Environment.databaseURL),
+            let databaseURL = URL(string: urlString)
+        else {
             throw ServiceError(
                 identifier: "Environmnent",
                 reason: "Env variable \(Constants.Environment.databaseURL) does not exist"
             )
         }
         
-        let config = try PostgreSQLDatabaseConfig(url: databaseURL)
+        let config = try PostgreSQLDatabaseConfig(from: databaseURL)
         return PostgreSQLDatabase(config: config)
     }
     else {
