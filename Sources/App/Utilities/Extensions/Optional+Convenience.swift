@@ -10,10 +10,10 @@ import Vapor
 
 extension Optional {
     
-    func unwrapped() throws -> Wrapped {
+    func unwrapped(file: StaticString = #file, line: UInt = #line) throws -> Wrapped {
         
         guard case let .some(value) = self else {
-            throw NSError(domain: "OptionalUnwrapping", code: -1)
+            throw UserCommandError.internalError(reason: "Optional Unwrapping Error (file: \(file), line: \(line))")
         }
         
         return value

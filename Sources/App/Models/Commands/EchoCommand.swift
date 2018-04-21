@@ -11,10 +11,16 @@ import Vapor
 struct EchoCommand: BasicUserCommand {
     
     static let keyword: String = "echo"
+    static let commandLength = CommandLength.atLeast(1)
     
     var contents: String
     
-    func generateResponse() throws -> UserCommandResponse {
+    init(contents: String?, request: UserCommandRequest) throws {
+        
+        self.contents = try contents.unwrapped()
+    }
+    
+    func generateResponse(using container: Container) throws -> UserCommandResponse {
         
         return UserCommandResponse(
             text: "Echo: \(self.contents)",

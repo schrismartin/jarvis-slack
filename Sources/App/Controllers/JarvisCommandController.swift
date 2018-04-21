@@ -7,15 +7,24 @@
 
 import Vapor
 
-final class CommandController: RouteCollection {
+/// Controller responding to the /jarvis command
+final class JarvisCommandController: RouteCollection {
     
     func boot(router: Router) throws {
         
         let eventGroup = router.grouped("slack", "command")
-        eventGroup.post(use: handleEvent)
+        eventGroup.post(use: handleCommand)
     }
     
-    func handleEvent(_ request: Request) throws -> Future<UserCommandResponse> {
+    /// Handle sub-commands passed through /jarvis {keyword}
+    /// and will respond to user errors.
+    ///
+    /// - Parameter request: Request object
+    /// - Returns: Response to Slack
+    /// - Throws: Vapor-specific errors
+    func handleCommand(_ request: Request) throws -> Future<UserCommandResponse> {
+        
+        print(request)
         
         return try request.content.decode(UserCommandRequest.self)
             
@@ -24,7 +33,7 @@ final class CommandController: RouteCollection {
                 
                 try $0.validate()
                 let commandService = try request.make(CommandService.self)
-                return try commandService.parseCommand(using: $0.text)
+                return try commandService.parseCommand(using: $0)
             }
             
             // Create a response

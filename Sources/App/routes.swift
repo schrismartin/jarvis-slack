@@ -13,6 +13,6 @@ public func routes(_ router: Router) throws {
     let eventController = EventController()
     try router.register(collection: eventController)
     
-    let commandController = CommandController()
+    let commandController = JarvisCommandController()
     try router.register(collection: commandController)
 }

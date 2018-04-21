@@ -8,27 +8,47 @@
 import Foundation
 import Vapor
 
+/// Used to register and parse commands.
 class CommandService {
     
-    var commandTypes = [UserCommand.Type]()
+    /// Registered commands
+    private var registeredCommandTypes = [UserCommand.Type]()
     
+    /// Register a command to be invoked
+    ///
+    /// - Parameter command: Command to be registered
     func register<U: UserCommand>(command: U.Type) {
         
-        commandTypes.append(command)
+        registeredCommandTypes.append(command)
     }
     
-    func parseCommand(using text: String) throws -> UserCommand {
+    /// Parse the text and return the correct command object.
+    ///
+    /// - Parameter text: Text to be parsed
+    /// - Returns: Command resulting from parsed text
+    /// - Throws:
+    ///    - Unrecognized Command Error
+    ///    -
+    func parseCommand(using request: UserCommandRequest) throws -> UserCommand {
         
+        let text = request.text
         let parser = try CommandParser(text: text)
         
-        let commandType = commandTypes
+        let potentialCommandType = registeredCommandTypes
             .first { $0.keyword == parser.command }
         
-        guard let command = commandType?.init(contents: parser.body) else {
-            throw UserCommandError(message: "Unrecognized command: \(parser.command)")
+        guard let commandType = potentialCommandType else {
+            throw UserCommandError.unrecognizedCommand(parser.command)
         }
         
-        return command
+        guard parser.satisfies(commandType.commandLength) else {
+            throw UserCommandError.invalidNumberOfArguments(expected: commandType.commandLength)
+        }
+        
+        return try commandType.init(
+            contents: parser.body,
+            request: request
+        )
     }
 }
 

@@ -13,9 +13,11 @@ class ComplimentGenerator: Service {
     
     func generateCompliment() throws -> String {
         
-        let index = try OSRandom().generate(Int.self)
-            % ComplimentGenerator.compliments.count
+        let numberOfCompliments = UInt32(ComplimentGenerator.compliments.count)
         
-        return ComplimentGenerator.compliments[index]
+        let index = try OSRandom().generate(UInt32.self)
+            % numberOfCompliments
+        
+        return ComplimentGenerator.compliments[Int(index)]
     }
 }

@@ -35,19 +35,4 @@ final class UserCommandRequest: SlackRequest {
         case text
         case triggerID = "trigger_id"
     }
-    
-    func parse() throws -> UserCommand {
-        
-        var phrase = text.split(separator: " ")
-        
-        switch phrase.popFirst()?.lowercased() {
-        case EchoCommand.keyword:
-            return EchoCommand(contents: phrase.joined(separator: " "))
-            
-        default:
-            throw UserCommandError(message: "This operation is not supported.")
-        }
-    }
 }
-
-extension UserCommandRequest: TokenValidatable { }

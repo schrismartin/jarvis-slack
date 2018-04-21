@@ -22,6 +22,7 @@ public func configure(
     /// Register CommandService
     let commandService = CommandService()
     commandService.register(command: EchoCommand.self)
+    commandService.register(command: ComplimentCommand.self)
     services.register(commandService)
     
     /// Register Compliments

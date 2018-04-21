@@ -30,16 +30,24 @@ final class UserCommandResponse: SlackResponse {
 
 extension UserCommandResponse: BasicUserCommand {
     
-    convenience init(contents text: String) {
+    static var commandLength: CommandLength {
+        return .unbounded
+    }
+    
+    convenience init(contents text: String?, request: UserCommandRequest) throws {
         
-        self.init(text: text, replyType: .inChannel, attachments: [])
+        self.init(
+            text: try text.unwrapped(),
+            replyType: .inChannel,
+            attachments: []
+        )
     }
     
     static var keyword: String {
-        return "echo"
+        return "response"
     }
     
-    func generateResponse() throws -> UserCommandResponse {
+    func generateResponse(using container: Container) throws -> UserCommandResponse {
         return self
     }
 }
