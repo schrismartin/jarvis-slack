@@ -18,12 +18,28 @@ public func configure(
     let router = EngineRouter.default()
     try routes(router)
     services.register(router, as: Router.self)
-
+    
+    /// Register CommandService
+    let commandService = CommandService()
+    commandService.register(command: EchoCommand.self)
+    services.register(commandService)
+    
+    /// Register Compliments
+    services.register(ComplimentGenerator.self) { container in
+        return ComplimentGenerator()
+    }
+    
     /// Register middleware
     var middlewares = MiddlewareConfig()
     middlewares.use(DateMiddleware.self)
     middlewares.use(ErrorMiddleware.self)
     services.register(middlewares)
+    
+    var contentConfig = ContentConfig.default()
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .secondsSince1970String
+    contentConfig.use(decoder: decoder, for: .json)
+    services.register(contentConfig)
 
     try configureDatabase(using: env, for: &services)
 }
