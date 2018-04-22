@@ -45,7 +45,6 @@ public func configure(
     var contentConfig = ContentConfig.default()
     let decoder = JSONDecoder()
     decoder.dateDecodingStrategy = .secondsSince1970String
-    decoder.keyDecodingStrategy = .convertFromSnakeCase
     contentConfig.use(decoder: decoder, for: .json)
     services.register(contentConfig)
 

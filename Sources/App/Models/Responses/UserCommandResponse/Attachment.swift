@@ -11,12 +11,17 @@ import Vapor
 final class Attachment: Content {
     
     var text: String?
-    var imageUrl: URL?
+    var imageURL: URL?
     
-    init(text: String?, imageUrl: URL?) {
+    enum CodingKeys: String, CodingKey {
+        case text
+        case imageURL = "image_url"
+    }
+    
+    init(text: String?, imageURL: URL?) {
         
         self.text = text
-        self.imageUrl = imageUrl
+        self.imageURL = imageURL
     }
 }
 
@@ -24,11 +29,11 @@ extension Attachment {
     
     convenience init(text: String) {
         
-        self.init(text: text, imageUrl: nil)
+        self.init(text: text, imageURL: nil)
     }
     
     convenience init(imageUrl: URL) {
         
-        self.init(text: nil, imageUrl: imageUrl)
+        self.init(text: nil, imageURL: imageUrl)
     }
 }
