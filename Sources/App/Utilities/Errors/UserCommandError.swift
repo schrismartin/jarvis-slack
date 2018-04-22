@@ -16,9 +16,9 @@ struct UserCommandError: Error {
     
     // MARK: - Computed Properties
     
-    var response: UserCommandResponse {
+    var response: Reply {
         
-        return UserCommandResponse(
+        return Reply(
             text: message,
             replyType: .ephemeral
         )

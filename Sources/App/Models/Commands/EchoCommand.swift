@@ -8,7 +8,7 @@
 import Foundation
 import Vapor
 
-struct EchoCommand: BasicUserCommand {
+struct EchoCommand: UserCommand {
     
     static let keyword: String = "echo"
     static let commandLength = CommandLength.atLeast(1)
@@ -20,11 +20,13 @@ struct EchoCommand: BasicUserCommand {
         self.contents = try contents.unwrapped()
     }
     
-    func generateResponse(using container: Container) throws -> UserCommandResponse {
+    func reply(using container: Container) throws -> Future<Reply> {
         
-        return UserCommandResponse(
+        let reply = Reply(
             text: "Echo: \(self.contents)",
             replyType: .inChannel
         )
+        
+        return reply.future(on: container)
     }
 }

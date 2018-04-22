@@ -25,25 +25,5 @@ protocol UserCommand {
     ///
     /// - Parameter container: Container from which the command is running
     /// - Returns: Response seen by the user
-    func generateFutureResponse(using container: Container) throws -> Future<UserCommandResponse>
-}
-
-protocol BasicUserCommand: UserCommand {
-    
-    /// Create a response as the result of this command
-    ///
-    /// - Returns: Response seen by the user
-    func generateResponse(using container: Container) throws -> UserCommandResponse
-}
-
-extension BasicUserCommand {
-    
-    func generateFutureResponse(using container: Container) throws -> Future<UserCommandResponse> {
-        
-        let promise = container.eventLoop.newPromise(UserCommandResponse.self)
-        let response = try generateResponse(using: container)
-        promise.succeed(result: response)
-        
-        return promise.futureResult
-    }
+    func reply(using container: Container) throws -> Future<Reply>
 }

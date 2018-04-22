@@ -11,7 +11,7 @@ import Vapor
 final class Event: Codable {
     
     var type: String
-    var user: String
+    var user: String?
     var text: String
     var timestamp: Date
     

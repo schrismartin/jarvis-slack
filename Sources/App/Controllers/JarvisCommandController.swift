@@ -27,7 +27,7 @@ final class JarvisCommandController: RouteCollection {
     /// - Parameter request: Request object
     /// - Returns: Response to Slack
     /// - Throws: Vapor-specific errors
-    func handleCommand(_ request: Request) throws -> Future<UserCommandResponse> {
+    func handleCommand(_ request: Request) throws -> Future<Reply> {
         
         print(request)
         
@@ -42,13 +42,13 @@ final class JarvisCommandController: RouteCollection {
             }
             
             // Create a response
-            .flatMap(to: UserCommandResponse.self) {
+            .flatMap(to: Reply.self) {
                 
-                try $0.generateFutureResponse(using: request)
+                try $0.reply(using: request)
             }
             
             // Handle errors
-            .catchMap { (error) -> UserCommandResponse in
+            .catchMap { (error) -> Reply in
                 
                 guard let commandError = error as? UserCommandError else {
                     throw error

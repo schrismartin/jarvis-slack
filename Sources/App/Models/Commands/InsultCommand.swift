@@ -8,7 +8,7 @@
 import Foundation
 import Vapor
 
-struct InsultCommand: BasicUserCommand {
+struct InsultCommand: UserCommand {
     
     static var keyword: String {
         return "insult"
@@ -25,13 +25,15 @@ struct InsultCommand: BasicUserCommand {
         target = contents
     }
     
-    func generateResponse(using container: Container) throws -> UserCommandResponse {
+    func reply(using container: Container) throws -> Future<Reply> {
         
         let generator = try container.make(InsultGenerator.self)
-        return UserCommandResponse(
+        let response = Reply(
             text: try createInsult(using: generator),
             replyType: .inChannel
         )
+        
+        return response.future(on: container)
     }
     
     func createInsult(using generator: InsultGenerator) throws -> String {

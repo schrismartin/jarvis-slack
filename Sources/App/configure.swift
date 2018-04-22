@@ -24,6 +24,7 @@ public func configure(
     commandService.register(command: EchoCommand.self)
     commandService.register(command: ComplimentCommand.self)
     commandService.register(command: InsultCommand.self)
+    commandService.register(command: InspireCommand.self)
     services.register(commandService)
     
     /// Register Compliments
@@ -42,10 +43,11 @@ public func configure(
     middlewares.use(ErrorMiddleware.self)
     services.register(middlewares)
     
+    /// Content Config
     var contentConfig = ContentConfig.default()
-    let decoder = JSONDecoder()
-    decoder.dateDecodingStrategy = .secondsSince1970String
-    contentConfig.use(decoder: decoder, for: .json)
+    let jsonDecoder = JSONDecoder()
+    jsonDecoder.dateDecodingStrategy = .secondsSince1970String
+    contentConfig.use(decoder: jsonDecoder, for: .json)
     services.register(contentConfig)
 
     try configureDatabase(using: env, for: &services)

@@ -8,7 +8,7 @@
 import Foundation
 import Vapor
 
-struct ComplimentCommand: BasicUserCommand {
+struct ComplimentCommand: UserCommand {
     
     static var keyword: String {
         return "compliment"
@@ -25,13 +25,15 @@ struct ComplimentCommand: BasicUserCommand {
         target = contents
     }
     
-    func generateResponse(using container: Container) throws -> UserCommandResponse {
+    func reply(using container: Container) throws -> Future<Reply> {
         
         let generator = try container.make(ComplimentGenerator.self)
-        return UserCommandResponse(
+        let reply = Reply(
             text: try createCompliment(using: generator),
             replyType: .inChannel
         )
+        
+        return reply.future(on: container)
     }
     
     func createCompliment(using generator: ComplimentGenerator) throws -> String {
