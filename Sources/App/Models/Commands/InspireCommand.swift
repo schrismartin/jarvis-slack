@@ -14,6 +14,10 @@ struct InspireCommand: UserCommand {
         return "inspire"
     }
     
+    static var description: String {
+        return "Create an AI-generated inspirational poster!"
+    }
+    
     static var commandLength: CommandLength {
         return .zero
     }

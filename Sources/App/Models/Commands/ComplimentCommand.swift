@@ -14,6 +14,10 @@ struct ComplimentCommand: UserCommand {
         return "compliment"
     }
     
+    static var description: String {
+        return "Create a compliment for yourself, or direct it at the specified user."
+    }
+    
     static var commandLength: CommandLength {
         return .range(0...1)
     }

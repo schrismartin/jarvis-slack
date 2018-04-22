@@ -14,6 +14,10 @@ struct InsultCommand: UserCommand {
         return "insult"
     }
     
+    static var description: String {
+        return "Insult yourself, or direct it at the specified user."
+    }
+    
     static var commandLength: CommandLength {
         return .range(0...1)
     }

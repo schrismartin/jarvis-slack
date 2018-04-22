@@ -11,8 +11,21 @@ import Vapor
 /// Used to register and parse commands.
 class CommandService {
     
+    typealias CommandDescription = (name: String, description: String)
+    
     /// Registered commands
     private var registeredCommandTypes = [UserCommand.Type]()
+    
+    var descriptions: [CommandDescription] {
+        
+        return registeredCommandTypes.map {
+            
+            CommandDescription(
+                name: $0.keyword,
+                description: $0.description
+            )
+        }
+    }
     
     /// Register a command to be invoked
     ///

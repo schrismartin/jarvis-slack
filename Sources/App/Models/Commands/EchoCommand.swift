@@ -10,8 +10,17 @@ import Vapor
 
 struct EchoCommand: UserCommand {
     
-    static let keyword: String = "echo"
-    static let commandLength = CommandLength.atLeast(1)
+    static var keyword: String {
+        return "echo"
+    }
+    
+    static var description: String {
+        return "Echo your message back to you."
+    }
+    
+    static var commandLength: CommandLength {
+        return .atLeast(1)
+    }
     
     var contents: String
     

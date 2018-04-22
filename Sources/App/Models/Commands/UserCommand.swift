@@ -13,7 +13,10 @@ protocol UserCommand {
     /// This command will be envoked using this keyword
     static var keyword: String { get }
     
-    /// This command is expected to have this number of words, including the command
+    /// User-friendly description used in the help dialog to describe the command
+    static var description: String { get }
+    
+    /// This command is expected to have this number of words, excluding the command
     static var commandLength: CommandLength { get }
     
     /// Create this command with these words
