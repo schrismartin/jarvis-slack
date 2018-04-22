@@ -16,6 +16,11 @@ final class JarvisCommandController: RouteCollection {
         eventGroup.post(use: handleCommand)
     }
     
+    func handleRequest(_ request: Request) throws -> Future<ResponseEncodable> {
+        
+        return try handleCommand(request).map { $0 as ResponseEncodable }
+    }
+    
     /// Handle sub-commands passed through /jarvis {keyword}
     /// and will respond to user errors.
     ///

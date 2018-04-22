@@ -12,20 +12,30 @@ final class EventController: RouteCollection {
     func boot(router: Router) throws {
         
         let eventGroup = router.grouped("slack", "event")
-        eventGroup.post(use: challenge)
+        eventGroup.post(use: handleRequest)
     }
     
-    func handle(request: Request) throws -> Future<Any> {
+    func handleRequest(_ request: Request) throws -> Future<Response> {
         
-        return try request.content
-            .decode(Challenge.self)
-            .map(to: Any.self) {
-                try $0.validate()
-                return $0.challenge
-        }
+        return try request.content.decode(EventDecider.self)
+            .flatMap(to: ResponseEncodable.self) {
+                
+                switch $0.type {
+                case .urlVerification:
+                    return try self.challenge(request)
+                        .map { $0 as ResponseEncodable }
+                    
+                case .eventCallback:
+                    return try self.handleEvent(request)
+                        .map { $0 as ResponseEncodable }
+                }
+            }
+            .flatMap(to: Response.self) { try $0.encode(for: request) }
     }
     
     func challenge(_ req: Request) throws -> Future<String> {
+        
+        print(req)
         
         return try req.content
             .decode(Challenge.self)

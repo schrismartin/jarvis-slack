@@ -23,11 +23,17 @@ public func configure(
     let commandService = CommandService()
     commandService.register(command: EchoCommand.self)
     commandService.register(command: ComplimentCommand.self)
+    commandService.register(command: InsultCommand.self)
     services.register(commandService)
     
     /// Register Compliments
     services.register(ComplimentGenerator.self) { container in
         return ComplimentGenerator()
+    }
+    
+    /// Register Insults
+    services.register(InsultGenerator.self) { container in
+        return InsultGenerator()
     }
     
     /// Register middleware
@@ -39,6 +45,7 @@ public func configure(
     var contentConfig = ContentConfig.default()
     let decoder = JSONDecoder()
     decoder.dateDecodingStrategy = .secondsSince1970String
+    decoder.keyDecodingStrategy = .convertFromSnakeCase
     contentConfig.use(decoder: decoder, for: .json)
     services.register(contentConfig)
 
