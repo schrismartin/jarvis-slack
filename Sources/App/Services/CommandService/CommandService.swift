@@ -45,6 +45,11 @@ class CommandService {
     func parseCommand(using request: UserCommandRequest) throws -> UserCommand {
         
         let text = request.text
+        
+        if text.isEmpty {
+            return try HelpCommand(contents: text, request: request)
+        }
+        
         let parser = try CommandParser(text: text)
         
         let potentialCommandType = registeredCommandTypes
