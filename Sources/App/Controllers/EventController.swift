@@ -7,7 +7,7 @@
 
 import Vapor
 
-final class EventController: RouteCollection {
+final class EventController: BaseController, RouteCollection {
     
     func boot(router: Router) throws {
         
@@ -50,7 +50,11 @@ final class EventController: RouteCollection {
         print(req.content)
         
         return try req.content.decode(SlackEventRequest.self)
-            .map(to: Void.self) { try $0.validate() }
+            .map(to: Void.self) { print($0.event); return try $0.validate() }
             .transform(to: .ok)
+            .catchMap { error in
+                try self.log(error: error, in: req)
+                return .ok
+        }
     }
 }

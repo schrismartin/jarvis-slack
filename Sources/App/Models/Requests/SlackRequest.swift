@@ -8,7 +8,4 @@
 import Foundation
 import Vapor
 
-protocol SlackRequest: Content, TokenValidatable {
-    
-    var token: String { get set }
-}
+protocol SlackRequest: Content, TokenValidatable { }
