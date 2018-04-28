@@ -50,7 +50,8 @@ final class EventController: BaseController, RouteCollection {
         print(req.content)
         
         return try req.content.decode(SlackEventRequest.self)
-            .map(to: Void.self) { print($0.event); return try $0.validate() }
+            .map(to: SlackEventRequest.self) { try $0.validate(); return $0 }
+            .flatMap(to: Event.self) { $0.event.save(on: req) }
             .transform(to: .ok)
             .catchMap { error in
                 try self.log(error: error, in: req)

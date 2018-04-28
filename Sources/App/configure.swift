@@ -26,7 +26,6 @@ public func configure(
     commandService.register(command: InsultCommand.self)
     commandService.register(command: InspireCommand.self)
     commandService.register(command: HelpCommand.self)
-    commandService.register(command: FuckYouCommand.self)
     services.register(commandService)
     
     /// Register Compliments
@@ -62,8 +61,9 @@ fileprivate func configureDatabase(using env: Environment, for services: inout S
     databases.add(database: database, as: .psql)
     services.register(databases)
     
-    let migrations = MigrationConfig()
-    //    migrations.add(model: Todo.self, database: .psql)
+    var migrations = MigrationConfig()
+    migrations.add(model: User.self, database: .psql)
+    migrations.add(model: Event.self, database: .psql)
     services.register(migrations)
 }
 
@@ -88,9 +88,8 @@ fileprivate func createDatabase(for env: Environment) throws -> PostgreSQLDataba
         
         let config = PostgreSQLDatabaseConfig(
             hostname: "localhost",
-            username: "vapor",
-            database: "vapor",
-            password: "password"
+            username: "schrismartin",
+            database: "jarvis"
         )
         
         return PostgreSQLDatabase(config: config)
