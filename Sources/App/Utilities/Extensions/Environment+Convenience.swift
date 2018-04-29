@@ -13,4 +13,9 @@ extension Environment {
         
         return get(Constants.Environment.slackToken) ?? "dev-slack-token"
     }
+    
+    static var botToken: String? {
+        
+        return get(Constants.Environment.botToken)
+    }
 }

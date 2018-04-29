@@ -28,15 +28,8 @@ public func configure(
     commandService.register(command: HelpCommand.self)
     services.register(commandService)
     
-    /// Register Compliments
-    services.register(ComplimentGenerator.self) { container in
-        return ComplimentGenerator()
-    }
-    
-    /// Register Insults
-    services.register(InsultGenerator.self) { container in
-        return InsultGenerator()
-    }
+    services.register(ComplimentGenerator())
+    services.register(InsultGenerator())
     
     /// Register middleware
     var middlewares = MiddlewareConfig()
