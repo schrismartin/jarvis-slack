@@ -7,16 +7,29 @@
 
 import Foundation
 import Vapor
+import FluentPostgreSQL
 
 final class Channel: Codable {
     
-    var id: String
+    var id: Channel.ID?
     
     init(id: String) {
         
         self.id = id
     }
 }
+
+extension Channel: Model {
+    
+    typealias ID = String
+    typealias Database = PostgreSQLDatabase
+    
+    static var idKey: IDKey {
+        return \.id
+    }
+}
+
+extension Channel: Migration { }
 
 extension Channel: Content { }
 
