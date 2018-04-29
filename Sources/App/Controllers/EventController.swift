@@ -47,11 +47,9 @@ final class EventController: BaseController, RouteCollection {
     
     func handleEvent(_ req: Request) throws -> Future<HTTPStatus> {
         
-        print(req.content)
-        
         return try req.content.decode(SlackEventRequest.self)
             .map(to: SlackEventRequest.self) { try $0.validate(); return $0 }
-            .flatMap(to: Event.self) { $0.event.save(on: req) }
+            .flatMap(to: Event.self) { Event(from: $0).create(on: req) }
             .transform(to: .ok)
             .catchMap { error in
                 try self.log(error: error, in: req)
