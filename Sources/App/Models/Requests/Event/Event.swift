@@ -1,65 +1,68 @@
 //
-//  Event.swift
+//  LoggedEvent.swift
 //  App
 //
-//  Created by Chris Martin on 4/14/18.
+//  Created by Chris Martin on 4/29/18.
 //
 
 import Foundation
 import FluentPostgreSQL
 import Vapor
 
-enum EventType: String, Codable, ReflectionDecodable, PostgreSQLColumnStaticRepresentable {
-    
-    case message
-    case other
-    
-    static func reflectDecoded() throws -> (EventType, EventType) {
-        return (.message, .other)
-    }
-    
-    static var postgreSQLColumn: PostgreSQLColumn {
-        
-        return PostgreSQLColumn(type: .text)
-    }
-}
-
 final class Event: Codable {
     
-    var id: Int?
+    var id: Event.ID?
     var type: String
     var userID: User.ID
-    var channel: String
+    var channelID: Channel.ID
     var text: String
     var timestamp: Date
     
-    enum CodingKeys: String, CodingKey {
-        
-        case id
-        case type
-        case userID = "user"
-        case channel
-        case text
-        case timestamp = "ts"
-    }
-    
-    init(id: Int?, type: String, userID: User.ID, channel: String, text: String, timestamp: Date) {
+    init(id: Event.ID?, type: String, userID: User.ID, channel: Channel.ID, text: String, timestamp: Date) {
         
         self.id = id
         self.type = type
         self.userID = userID
         self.text = text
         self.timestamp = timestamp
-        self.channel = channel
+        self.channelID = channel
     }
     
     var user: Parent<Event, User> {
         
         return parent(\.userID)
     }
+    
+    var channel: Parent<Event, Channel> {
+        
+        return parent(\.channelID)
+    }
 }
 
-extension Event: PostgreSQLModel { }
+extension Event {
+    
+    convenience init(from request: SlackEventRequest) {
+        
+        self.init(
+            id: request.eventID,
+            type: request.event.type,
+            userID: request.event.userID,
+            channel: request.event.channelID,
+            text: request.event.text,
+            timestamp: request.event.timestamp
+        )
+    }
+}
+
+extension Event: Model {
+    
+    typealias ID = String
+    typealias Database = PostgreSQLDatabase
+    
+    static var idKey: IDKey {
+        return \.id
+    }
+}
 
 extension Event: Migration { }
 
@@ -70,9 +73,10 @@ extension Event: CustomStringConvertible {
     var description: String {
         
         return """
+        id: \(id), \
         type: \(type), \
-        user: \(user), \
-        channel: \(channel), \
+        user: \(userID), \
+        channel: \(channelID), \
         text: \(text), \
         timestamp: \(timestamp)
         """
