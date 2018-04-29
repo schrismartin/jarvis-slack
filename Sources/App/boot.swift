@@ -5,13 +5,21 @@ import Vapor
 ///
 /// [Learn More →](https://docs.vapor.codes/3.0/getting-started/structure/#bootswift)
 public func boot(_ app: Application) throws {
-    // your code here
     
     try fetchUsers(using: app)
 }
 
-func fetchUsers(using container: Container) throws {
+@discardableResult
+func fetchUsers(using app: Application) throws -> Future<[User]> {
     
-    let client = try container.make(Client.self)
-//    client.get(<#T##url: URLRepresentable##URLRepresentable#>)
+    let client = try app.make(Client.self)
+    let token = try Environment.botToken.unwrapped()
+    let request = GetUsersRequest(token: token)
+    
+    return app.withConnection(to: .psql) { (connection) -> Future<[User]> in
+        return try client.send(request: request)
+            .flatMap(to: [User].self) { $0.content.get([User].self, at: "members") }
+            .map(to: [Future<User>].self) { $0.map { $0.create(on: connection) } }
+            .flatMap(to: [User].self) { $0.flatten(on: app) }
+    }
 }
