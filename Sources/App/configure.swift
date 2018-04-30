@@ -25,6 +25,7 @@ public func configure(
     commandService.register(command: ComplimentCommand.self)
     commandService.register(command: InsultCommand.self)
     commandService.register(command: InspireCommand.self)
+    commandService.register(command: IdentifyCommand.self)
     commandService.register(command: HelpCommand.self)
     services.register(commandService)
     

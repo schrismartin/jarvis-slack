@@ -56,7 +56,7 @@ extension Client {
     
     private func createEncodedURL<C: Content>(using baseURL: URLRepresentable, content: C) throws -> URLRepresentable {
         
-        let encoder = FormURLEncoder()
+        let encoder = URLEncodedFormEncoder()
         let data = try encoder.encode(content)
         let params = try String(data: data, encoding: .utf8).unwrapped()
         
