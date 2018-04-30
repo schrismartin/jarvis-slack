@@ -37,7 +37,19 @@ struct IdentifyCommand: UserCommand {
                 .first()
         }
         .map(to: Reply.self) {
-            Reply(text: "Your name is \(try $0.unwrapped().realName), your username is \(try $0.unwrapped().name), and your id is \(try $0.unwrapped().id.unwrapped())", replyType: .ephemeral)
+            let tag = UserTag(
+                userID: try $0.unwrapped().requireID(),
+                username: try $0.unwrapped().name
+            )
+            
+            return Reply(
+                text: """
+                Your name is *\(try $0.unwrapped().realName)*, \
+                your username is \(tag.tagValue), \
+                and your user-id is `\(try $0.unwrapped().id.unwrapped())`
+                """,
+                replyType: .ephemeral
+            )
         }
     }
 }
