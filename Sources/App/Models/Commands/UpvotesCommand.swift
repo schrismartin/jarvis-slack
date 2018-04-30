@@ -12,6 +12,7 @@ import Fluent
 struct UpvotesCommand: UserCommand {
     
     let request: UserCommandRequest
+    var targetUser: UserTag?
     
     static var keyword: String {
         return "upvotes"
@@ -22,19 +23,23 @@ struct UpvotesCommand: UserCommand {
     }
     
     static var commandLength: CommandLength {
-        return .zero
+        return .range(0...1)
     }
     
     init(contents: String?, request: UserCommandRequest) throws {
         
         self.request = request
+        
+        if let contents = contents, let userTag = UserTag(tag: contents) {
+            targetUser = userTag
+        }
     }
     
     func reply(using container: Container) throws -> Future<Reply> {
         
         return container.withNewConnection(to: .psql) { connection in
             
-            let user = try self.request.user.get(on: connection)
+            let user = try self.fetchTargetUser(on: connection)
             
             /// TODO: Switch to this whenever possible.
             // let upvoteCount = user.flatMap(to: Int.self) { try $0.upvotes.query(on: connection)
@@ -46,6 +51,20 @@ struct UpvotesCommand: UserCommand {
             return map(to: Reply.self, user, upvoteCount) { (user, count) in
                 Reply(text: "\(user.realName): \(count)")
             }
+        }
+    }
+    
+    private func fetchTargetUser(on connection: DatabaseConnectable) throws -> Future<User> {
+        
+        if let targetUser = targetUser {
+            return connection.databaseConnection(to: .psql)
+                .flatMap(to: User?.self) {
+                    try $0.query(User.self).filter(\User.id == targetUser.userID).first()
+                }
+                .map(to: User.self) { try $0.unwrapped() }
+        }
+        else {
+            return try request.user.get(on: connection)
         }
     }
 }

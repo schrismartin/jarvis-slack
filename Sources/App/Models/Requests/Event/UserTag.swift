@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import FluentPostgreSQL
 
 struct UserTag {
     
