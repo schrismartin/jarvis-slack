@@ -7,10 +7,12 @@
 
 import Foundation
 import Vapor
+import FluentPostgreSQL
 import Validation
 
 final class UserCommandRequest: SlackRequest {
     
+    var id: UserCommandRequest.ID?
     var token: String
     var teamID: String
     var teamDomain: String
@@ -36,3 +38,13 @@ final class UserCommandRequest: SlackRequest {
         case triggerID = "trigger_id"
     }
 }
+
+extension UserCommandRequest: PostgreSQLModel {
+    
+    var user: Parent<UserCommandRequest, User> {
+        
+        return parent(\.userID)
+    }
+}
+
+extension UserCommandRequest: Migration { }
