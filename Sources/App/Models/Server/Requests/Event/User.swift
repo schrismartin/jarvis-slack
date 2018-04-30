@@ -38,6 +38,22 @@ final class User: Codable {
 
 extension User {
     
+    var firstName: String? {
+        
+        return realName
+            .split(separator: " ")
+            .first
+            .flatMap(String.init)
+    }
+    
+    var lastName: String? {
+        
+        return realName
+            .split(separator: " ")
+            .last
+            .flatMap(String.init)
+    }
+    
     var events: Children<User, Event> {
         
         return children(\.userID)
