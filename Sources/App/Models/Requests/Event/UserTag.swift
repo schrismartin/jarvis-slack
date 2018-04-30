@@ -18,7 +18,7 @@ struct UserTag {
         let values = tag.trimmingCharacters(in: CharacterSet(charactersIn: "<>"))
         let components = values.split(separator: "|")
         
-        guard let userID = components.first, userID.hasPrefix("@") else { return nil }
+        guard let userID = components.first, userID.first == "@" else { return nil }
         let username = components.last
         
         self.init(
