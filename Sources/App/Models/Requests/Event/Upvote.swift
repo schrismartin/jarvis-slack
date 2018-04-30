@@ -7,37 +7,41 @@
 
 import Foundation
 import Vapor
+import FluentPostgreSQL
 
-class Upvote {
+final class Upvote: Codable {
     
+    var id: Upvote.ID?
     var sender: User.ID
     var target: User.ID
-    var count: Int = 1
+    var count: Int
     
-    convenience init?(from event: Event) {
-        
-        let message = event.text
-        
-        let values = message.split(separator: " ")
-        guard
-            values.count == 2,
-            let upvoteValue = values.first,
-            upvoteValue == "+1",
-            let user = values.last,
-            let tag = UserTag(tag: String(user))
-        else {
-            return nil
-        }
-        
-        self.init(
-            sender: event.userID,
-            target: tag.userID
-        )
-    }
-    
-    init(sender: User.ID, target: User.ID) {
+    init(sender: User.ID, target: User.ID, count: Int = 0) {
         
         self.sender = sender
         self.target = target
+        self.count = count
+    }
+    
+    var targetUser: Parent<Upvote, User> {
+        
+        return parent(\.target)
+    }
+    
+    var sendingUser: Parent<Upvote, User> {
+        
+        return parent(\.sender)
     }
 }
+
+extension Upvote {
+    
+    func incrementingCount(by amount: Int) -> Upvote {
+        
+        count += amount
+        return self
+    }
+}
+
+extension Upvote: PostgreSQLModel { }
+extension Upvote: Migration { }
