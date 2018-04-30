@@ -29,8 +29,14 @@ public func configure(
     commandService.register(command: HelpCommand.self)
     services.register(commandService)
     
+    /// Register Command-related Services
     services.register(ComplimentGenerator())
     services.register(InsultGenerator())
+    
+    /// Register EventService
+    let eventService = EventService()
+    eventService.register(hook: VoteHook.self)
+    services.register(eventService)
     
     /// Register middleware
     var middlewares = MiddlewareConfig()
@@ -57,7 +63,9 @@ fileprivate func configureDatabase(using env: Environment, for services: inout S
     
     var migrations = MigrationConfig()
     migrations.add(model: User.self, database: .psql)
+    migrations.add(model: Channel.self, database: .psql)
     migrations.add(model: Event.self, database: .psql)
+    migrations.add(model: Upvote.self, database: .psql)
     services.register(migrations)
 }
 

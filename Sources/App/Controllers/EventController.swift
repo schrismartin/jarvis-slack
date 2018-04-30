@@ -50,10 +50,17 @@ final class EventController: BaseController, RouteCollection {
         return try req.content.decode(SlackEventRequest.self)
             .map(to: SlackEventRequest.self) { try $0.validate(); return $0 }
             .flatMap(to: Event.self) { Event(from: $0).create(on: req) }
+            .flatMap(to: Event.self) { try self.performHooks(for: $0, on: req) }
             .transform(to: .ok)
             .catchMap { error in
                 try self.log(error: error, in: req)
                 return .ok
         }
+    }
+    
+    func performHooks(for event: Event, on worker: Container) throws -> Future<Event> {
+        
+        let eventService = try worker.make(EventService.self)
+        return eventService.handle(event: event, on: worker)
     }
 }

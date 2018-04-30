@@ -53,10 +53,28 @@ extension User {
             .last
             .flatMap(String.init)
     }
+}
+
+// MARK: - Events
+extension User {
     
     var events: Children<User, Event> {
         
         return children(\.userID)
+    }
+}
+
+// MARK: - Upvotes
+extension User {
+    
+    var upvotes: Children<User, Upvote> {
+        
+        return children(\.target)
+    }
+    
+    var sentUpvotes: Children<User, Upvote> {
+        
+        return children(\.sender)
     }
 }
 
