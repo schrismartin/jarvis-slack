@@ -55,10 +55,15 @@ extension User {
     }
 }
 
-// MARK: - Events
+// MARK: - Slack Entities
 extension User {
     
     var events: Children<User, Event> {
+        
+        return children(\.userID)
+    }
+    
+    var commands: Children<User, UserCommandRequest> {
         
         return children(\.userID)
     }
@@ -78,6 +83,7 @@ extension User {
     }
 }
 
+// MARK: - Model
 extension User: Model {
 
     typealias Database = PostgreSQLDatabase
