@@ -43,5 +43,22 @@ extension Upvote {
     }
 }
 
+extension Upvote {
+    
+    static func create(by user: User, amount: Int, target: User.ID, on conn: DatabaseConnectable) throws -> Future<Upvote> {
+        
+        return try user.sentUpvotes.query(on: conn)
+            .filter(\Upvote.target == target)
+            .first()
+            .map(to: Upvote.self) { vote in
+                
+                let userID = try user.requireID()
+                return vote ?? Upvote(sender: userID, target: target)
+            }
+            .do { $0.count += amount }
+            .save(on: conn)
+    }
+}
+
 extension Upvote: PostgreSQLModel { }
 extension Upvote: Migration { }

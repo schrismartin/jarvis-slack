@@ -60,6 +60,18 @@ extension UserCommandError {
         return UserCommandError(message: "Something went wrong, reason: \(reason)")
     }
     
+    static func optionalUnwrappingError(file: StaticString = #file, line: UInt = #line, function: String = #function) -> UserCommandError {
+        
+        return UserCommandError.internalError(reason: """
+            Optional Unwrapping Error –––
+            \(file): \(line)
+            Function: \(function)
+            
+            Report to Chris. Be sure to tell him he fucked up.
+            """
+        )
+    }
+    
     static var invalidBurnUsage: UserCommandError {
         
         return UserCommandError(message: "You should probably try tagging someone, dumbass.")
