@@ -16,7 +16,11 @@ final class Upvote: Codable {
     var target: User.ID
     var count: Int
     
-    init(sender: User.ID, target: User.ID, count: Int = 0) {
+    init(sender: User.ID, target: User.ID, count: Int = 0) throws {
+        
+        guard sender != target else {
+            throw Error.equalSourceAndTarget
+        }
         
         self.sender = sender
         self.target = target
@@ -53,7 +57,7 @@ extension Upvote {
             .map(to: Upvote.self) { vote in
                 
                 let userID = try user.requireID()
-                return vote ?? Upvote(sender: userID, target: target)
+                return try vote ?? Upvote(sender: userID, target: target)
             }
             .do { $0.count += amount }
             .save(on: conn)
@@ -62,3 +66,11 @@ extension Upvote {
 
 extension Upvote: PostgreSQLModel { }
 extension Upvote: Migration { }
+
+extension Upvote {
+    
+    enum Error: Swift.Error {
+        
+        case equalSourceAndTarget
+    }
+}
