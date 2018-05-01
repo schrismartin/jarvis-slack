@@ -7,6 +7,7 @@
 
 import Foundation
 import Vapor
+import Fluent
 
 struct ComplimentCommand: UserCommand {
     
@@ -22,32 +23,40 @@ struct ComplimentCommand: UserCommand {
         return .range(0...1)
     }
     
-    var target: String?
+    let target: UserTag
 
-    init(contents: String?, request: UserCommandRequest) {
+    init(contents: String?, request: UserCommandRequest) throws {
     
-        target = contents
+        guard let target = contents.flatMap(UserTag.init) else {
+            throw UserCommandError.invalidComplimentUsage
+        }
+        
+        self.target = target
     }
     
     func reply(using container: Container) throws -> Future<Reply> {
         
         let generator = try container.make(ComplimentGenerator.self)
-        let reply = Reply(
-            text: try createCompliment(using: generator),
-            replyType: .inChannel
-        )
         
-        return reply.future(on: container)
+        return container.newConnection(to: .psql)
+            .flatMap(to: User?.self) {
+                try $0.query(User.self)
+                    .filter(\User.id == self.target.userID)
+                    .first()
+            }
+            .map(to: User.self) { try $0.unwrapped() }
+            .map(to: Reply.self) {
+                Reply(
+                    text: try self.createCompliment(using: generator, for: $0),
+                    replyType: .inChannel
+                )
+            }
     }
     
-    func createCompliment(using generator: ComplimentGenerator) throws -> String {
+    func createCompliment(using generator: ComplimentGenerator, for user: User) throws -> String {
         
         let compliment = try generator.generateCompliment()
-        if let target = target {
-            return "\(target), \(compliment.lowercased())"
-        }
-        else {
-            return compliment
-        }
+        let name = try user.firstName.unwrapped()
+        return "\(name), \(compliment.lowercased())"
     }
 }

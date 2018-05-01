@@ -7,11 +7,12 @@
 
 import Foundation
 import Vapor
+import Fluent
 
 struct InsultCommand: UserCommand {
     
     static var keyword: String {
-        return "insult"
+        return "burn"
     }
     
     static var description: String {
@@ -22,32 +23,40 @@ struct InsultCommand: UserCommand {
         return .range(0...1)
     }
     
-    var target: String?
+    var target: UserTag
     
-    init(contents: String?, request: UserCommandRequest) {
+    init(contents: String?, request: UserCommandRequest) throws {
         
-        target = contents
+        guard let target = contents.flatMap(UserTag.init) else {
+            throw UserCommandError.invalidBurnUsage
+        }
+        
+        self.target = target
     }
     
     func reply(using container: Container) throws -> Future<Reply> {
         
         let generator = try container.make(InsultGenerator.self)
-        let response = Reply(
-            text: try createInsult(using: generator),
-            replyType: .inChannel
-        )
         
-        return response.future(on: container)
+        return container.newConnection(to: .psql)
+            .flatMap(to: User?.self) {
+                try $0.query(User.self)
+                    .filter(\User.id == self.target.userID)
+                    .first()
+            }
+            .map(to: User.self) { try $0.unwrapped() }
+            .map(to: Reply.self) {
+                Reply(
+                    text: try self.createInsult(using: generator, for: $0),
+                    replyType: .inChannel
+                )
+            }
     }
     
-    func createInsult(using generator: InsultGenerator) throws -> String {
+    func createInsult(using generator: InsultGenerator, for user: User) throws -> String {
         
         let insult = try generator.generateInsult()
-        if let target = target {
-            return "\(target), \(insult.lowercased())"
-        }
-        else {
-            return insult
-        }
+        let name = try user.firstName.unwrapped()
+        return "\(name), \(insult.lowercased())"
     }
 }
