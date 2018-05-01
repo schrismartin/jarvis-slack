@@ -59,4 +59,14 @@ extension UserCommandError {
         
         return UserCommandError(message: "Something went wrong, reason: \(reason)")
     }
+    
+    static var invalidBurnUsage: UserCommandError {
+        
+        return UserCommandError(message: "You should probably try tagging someone, dumbass.")
+    }
+    
+    static var invalidComplimentUsage: UserCommandError {
+        
+        return UserCommandError(message: "Try tagging them instead!")
+    }
 }
