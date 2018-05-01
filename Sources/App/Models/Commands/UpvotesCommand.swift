@@ -37,34 +37,19 @@ struct UpvotesCommand: UserCommand {
     
     func reply(using container: Container) throws -> Future<Reply> {
         
-        return container.withNewConnection(to: .psql) { connection in
+        return container.withPooledConnection(to: .psql) { conn in
             
-            let user = try self.fetchTargetUser(on: connection)
-            
-            /// TODO: Switch to this whenever possible.
-            // let upvoteCount = user.flatMap(to: Int.self) { try $0.upvotes.query(on: connection)
-            //    .aggregate(.sum, field: \Upvote.count) }
-            
-            let upvoteCount = user.flatMap(to: [Upvote].self) { try $0.upvotes.query(on: connection).all() }
-                .map(to: Int.self) { $0.map { $0.count }.reduce(0, +) }
+            let userID = self.targetUser?.userID ?? self.request.userID
+            let user = try User.fetch(with: userID, on: conn)
+    
+            let upvoteCount = user.flatMap(to: Int.self) { user in
+                let upvoteService = try container.make(UpvoteService.self)
+                return try upvoteService.countUpvotes(for: user, on: container)
+            }
             
             return map(to: Reply.self, user, upvoteCount) { (user, count) in
                 Reply(text: "\(user.realName): \(count)")
             }
-        }
-    }
-    
-    private func fetchTargetUser(on connection: DatabaseConnectable) throws -> Future<User> {
-        
-        if let targetUser = targetUser {
-            return connection.databaseConnection(to: .psql)
-                .flatMap(to: User?.self) {
-                    try $0.query(User.self).filter(\User.id == targetUser.userID).first()
-                }
-                .map(to: User.self) { try $0.unwrapped() }
-        }
-        else {
-            return try request.user.get(on: connection)
         }
     }
 }
