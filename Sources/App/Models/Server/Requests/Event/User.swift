@@ -94,6 +94,17 @@ extension User: Model {
     }
 }
 
+extension User {
+    
+    static func fetch(with id: User.ID, on conn: PostgreSQLConnection) throws -> Future<User> {
+        
+        return try conn.query(User.self)
+            .filter(\User.id == id)
+            .first()
+            .unwrap(or: UserCommandError.optionalUnwrappingError())
+    }
+}
+
 extension User: Migration { }
 
 extension User: Content { }

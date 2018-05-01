@@ -8,4 +8,17 @@
 import Foundation
 import Vapor
 
-protocol SlackClientRequest: ClientRequest { }
+protocol SlackClientRequest: ContentClientRequest { }
+
+extension SlackClientRequest {
+    
+    static var headers: HTTPHeaders {
+        
+        if let token = Environment.botToken {
+            return ["Authorization": "Bearer \(token)"]
+        }
+        else {
+            return [:]
+        }
+    }
+}

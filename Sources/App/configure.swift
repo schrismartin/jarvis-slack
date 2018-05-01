@@ -39,6 +39,9 @@ public func configure(
     eventService.register(hook: VoteHook.self)
     services.register(eventService)
     
+    /// Register Upvotes
+    services.register(UpvoteService())
+    
     /// Register middleware
     var middlewares = MiddlewareConfig()
     middlewares.use(DateMiddleware.self)

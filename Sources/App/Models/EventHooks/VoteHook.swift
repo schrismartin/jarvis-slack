@@ -18,28 +18,34 @@ struct VoteHook: EventHook {
         self.event = event
     }
     
-    func handleEvent(on worker: Container) -> Future<Event> {
+    func handleEvent(on worker: Container) throws -> Future<Event> {
         
-        do {
-            let attributes = try parse(using: event.text)
-            return worker.withNewConnection(to: .psql) { connection in
-                try self.event.user.get(on: connection)
-                    .flatMap(to: Upvote?.self) { user -> Future<Upvote?> in
-                        try user.sentUpvotes.query(on: connection)
-                            .filter(\Upvote.target == attributes.target)
-                            .first()
-                    }
-                    .map(to: Upvote.self) {
-                        $0 ?? Upvote(sender: self.event.userID, target: attributes.target)
-                    }
-                    .map(to: Upvote.self) { $0.incrementingCount(by: attributes.amount) }
-                    .flatMap(to: Upvote.self) { $0.save(on: connection) }
-            }
-            .transform(to: event)
+        let attributes = try parse(using: event.text)
+        
+        return worker.withPooledConnection(to: .psql) { conn in
+            
+            let upvote = try self.event.user.get(on: conn)
+                .flatMap(to: Upvote.self) { try Upvote.create(by: $0, amount: attributes.amount, target: attributes.target, on: conn) }
+            
+            let targetUser = try User.fetch(with: attributes.target, on: conn)
+            let messageResponse = try self.sendResponse(onCompletionOf: targetUser, and: upvote, on: worker)
+            
+            return messageResponse.transform(to: self.event)
         }
-        catch {
-            print(error)
-            return Future.map(on: worker) { self.event }
+    }
+    
+    private func sendResponse(onCompletionOf user: Future<User>, and upvote: Future<Upvote>, on worker: Container) throws -> Future<Response> {
+        
+        return flatMap(to: Response.self, upvote, user) { _, user in
+            
+            let upvoteService = try worker.make(UpvoteService.self)
+            return try upvoteService.countUpvotes(for: user, on: worker)
+                .flatMap(to: Response.self) {
+                    try SlackMessage(
+                        text: "\(user.realName): \($0)",
+                        channelID: self.event.channelID
+                    ).send(on: worker)
+                }
         }
     }
 }
@@ -85,6 +91,7 @@ extension VoteHook {
 extension VoteHook {
     
     enum Error: Swift.Error {
+        
         case invalidNumberOfComponents
         case missingAmount
         case missingTarget
