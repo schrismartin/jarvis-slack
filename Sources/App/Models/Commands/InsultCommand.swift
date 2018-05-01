@@ -44,19 +44,11 @@ struct InsultCommand: UserCommand {
                     .filter(\User.id == self.target.userID)
                     .first()
             }
-            .map(to: User.self) { try $0.unwrapped() }
             .map(to: Reply.self) {
                 Reply(
-                    text: try self.createInsult(using: generator, for: $0),
+                    text: try generator.generateInsult(for: $0),
                     replyType: .inChannel
                 )
             }
-    }
-    
-    func createInsult(using generator: InsultGenerator, for user: User) throws -> String {
-        
-        let insult = try generator.generateInsult()
-        let name = try user.firstName.unwrapped()
-        return "\(name), \(insult.lowercased())"
     }
 }

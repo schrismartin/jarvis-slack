@@ -25,12 +25,30 @@ struct VoteHook: EventHook {
         return worker.withPooledConnection(to: .psql) { conn in
             
             let upvote = try self.event.user.get(on: conn)
-                .flatMap(to: Upvote.self) { try Upvote.create(by: $0, amount: attributes.amount, target: attributes.target, on: conn) }
+                .flatMap(to: Upvote.self) {
+                    
+                    try Upvote.create(
+                        by: $0,
+                        amount: attributes.amount,
+                        target: attributes.target,
+                        on: conn
+                    )
+                }
             
             let targetUser = try User.fetch(with: attributes.target, on: conn)
             let messageResponse = try self.sendResponse(onCompletionOf: targetUser, and: upvote, on: worker)
             
             return messageResponse.transform(to: self.event)
+        }
+            
+        .catchFlatMap { error in
+            
+            if error as? Upvote.Error == Upvote.Error.equalSourceAndTarget {
+                return try self.sendInsult(to: self.event.userID, on: worker)
+                    .transform(to: self.event)
+            }
+            
+            throw error
         }
     }
     
@@ -45,6 +63,21 @@ struct VoteHook: EventHook {
                         text: "\(user.realName): \($0)",
                         channelID: self.event.channelID
                     ).send(on: worker)
+                }
+        }
+    }
+    
+    private func sendInsult(to userID: User.ID, on worker: Container) throws -> Future<Response> {
+        
+        return worker.withPooledConnection(to: .psql) { conn -> Future<Response> in
+            try User.fetch(with: userID, on: conn)
+                .map(to: String.self) { user in
+                    let generator = try worker.make(InsultGenerator.self)
+                    return try generator.generateInsult(for: user)
+                }
+                .flatMap(to: Response.self) { insult in
+                    try SlackMessage(text: insult, channelID: self.event.channelID)
+                        .send(on: worker)
                 }
         }
     }

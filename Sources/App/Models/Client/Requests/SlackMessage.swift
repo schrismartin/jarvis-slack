@@ -15,7 +15,7 @@ struct SlackMessage: Content {
     var text: String
     var attachments: [Attachment]
     
-    init(text: String, channelID: Channel.ID, attachments: [Attachment] = []) throws {
+    init(text: String, channelID: Channel.ID, attachments: [Attachment] = []) {
         
         self.channel = channelID
         self.text = text
