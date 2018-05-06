@@ -14,13 +14,10 @@ class UpvoteService: Service {
     func countUpvotes(for user: User, on worker: Container) throws -> Future<Int> {
         
         return worker.withPooledConnection(to: .psql) { conn in
-            
-            /// TODO: Switch to this whenever possible.
-            // let upvoteCount = user.flatMap(to: Int.self) { try $0.upvotes.query(on: conn)
-            //    .aggregate(.sum, field: \Upvote.count) }
-            
-            try user.upvotes.query(on: conn).all()
-                .map(to: Int.self) { $0.map { $0.count }.reduce(0, +) }
+            try user.upvotes
+                .query(on: conn)
+                .sum(\.count)
+                .map(Int.init)
         }
     }
     
