@@ -64,7 +64,7 @@ public func configure(
 fileprivate func configureDatabase(using env: Environment, for services: inout Services) throws {
     
     let database = try createDatabase(for: env)
-    var databases = DatabaseConfig()
+    var databases = DatabasesConfig()
     databases.add(database: database, as: .psql)
     services.register(databases)
     

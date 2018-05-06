@@ -18,13 +18,9 @@ class CommandService {
     
     var descriptions: [CommandDescription] {
         
-        return registeredCommandTypes.map {
-            
-            CommandDescription(
-                name: $0.keyword,
-                description: $0.description
-            )
-        }
+        return registeredCommandTypes
+            .filter { !$0.isHidden }
+            .map { CommandDescription(name: $0.keyword, description: $0.description) }
     }
     
     /// Register a command to be invoked

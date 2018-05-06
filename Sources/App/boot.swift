@@ -16,7 +16,7 @@ func fetchUsers(using app: Application) throws -> Future<[User]> {
     let token = try Environment.botToken.unwrapped()
     let request = GetUsersRequest(token: token)
     
-    return app.withConnection(to: .psql) { connection -> Future<[User]> in
+    return app.withPooledConnection(to: .psql) { connection -> Future<[User]> in
         return try client.send(request: request)
             .flatMap(to: [User].self) { $0.content.get([User].self, at: "members") }
             .map(to: [Future<User>].self) { $0.map { $0.create(on: connection) } }

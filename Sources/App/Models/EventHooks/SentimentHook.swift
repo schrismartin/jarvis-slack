@@ -13,14 +13,16 @@ struct SentimentHook: EventHook {
     
     var event: Event
     
-    init(event: Event) {
+    init(event: Event) throws {
         
+        guard !event.isSlashCommand else {
+            throw UserCommandError.unsupportedOperation
+        }
+
         self.event = event
     }
     
     func handleEvent(on worker: Container) throws -> Future<Event> {
-        
-        print("Sentiment hook triggered at \(Date()).")
         
         return worker.withPooledConnection(to: .psql) { conn in
             try Sentiment.create(for: self.event, on: worker)

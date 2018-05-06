@@ -31,7 +31,7 @@ struct HelpCommand: UserCommand {
         
         var message = "/jarvis {command} {arguments}"
         for command in commandDescriptions {
-            message += "\n    - \(command.name): \(command.description)"
+            message += "\n    • *\(command.name):* _\(command.description)_"
         }
         
         return Reply(text: message, replyType: .ephemeral).future(on: container)
