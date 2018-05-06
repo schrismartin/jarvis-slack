@@ -10,7 +10,7 @@ import Vapor
 
 struct SentimentCommand: UserCommand {
     
-    typealias SentimentData = (positivity: Double, objectivity: Double)
+    typealias SentimentData = (positivity: Double, objectivity: Double, count: Int)
     
     static var keyword: String {
         return "sentiment"
@@ -18,6 +18,10 @@ struct SentimentCommand: UserCommand {
     
     static var description: String {
         return "Gets the sentiment scores of the specified user (or yourself if none is specified)"
+    }
+    
+    static var isHidden: Bool {
+        return true
     }
     
     static var commandLength: CommandLength {
@@ -40,12 +44,24 @@ struct SentimentCommand: UserCommand {
         
         return container.withPooledConnection(to: .psql) { try User.fetch(with: self.targetUser, on: $0) }
             .flatMap(to: String.self) { user in
-                let positivity = try Sentiment.averagePositivity(for: user, on: container)
-                let objectivity = try Sentiment.averageObjectivity(for: user, on: container)
-                return map(to: SentimentData.self, positivity, objectivity) { pos, obj in
-                    SentimentData(positivity: pos, objectivity: obj)
+                
+                try Sentiment.allSentiments(for: user, on: container)
+                    .map(to: String.self) {
+                        
+                        let polarity = String($0.polarity, numberOfDigits: 3)
+                        let objectivity = String($0.objectivity, numberOfDigits: 3)
+                        let pConfidence = String($0.polarityDifferential, numberOfDigits: 3)
+                        let oConfidence = String($0.objectivityDifferential, numberOfDigits: 3)
+                        
+                        return """
+                        Sentiment stats for _\(user.realName)_
+                        • *Positivity*: \(polarity) ±\(pConfidence)
+                        • *Objectivity*: \(objectivity) ±\(oConfidence)
+                        • *Data Size*: \($0.count) messages
+                        
+                        _*All stats are on a scale of -1 to 1._
+                        """
                 }
-                .map { "\(user.name) – positivity: \($0.positivity), objectivity: \($0.objectivity)" }
             }
             .map { Reply(text: $0, replyType: .inChannel) }
     }

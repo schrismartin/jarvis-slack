@@ -27,6 +27,19 @@ final class Event: Codable {
         self.timestamp = timestamp
         self.channelID = channel
     }
+}
+
+// MARK: - Computed Properties
+extension Event {
+    
+    var isSlashCommand: Bool {
+        
+        return text.first == "/"
+    }
+}
+
+// MARK: - Queries
+extension Event {
     
     var user: Parent<Event, User> {
         

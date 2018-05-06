@@ -24,8 +24,8 @@ class EventService {
             future.flatMap(to: Event.self) { (event) -> Future<Event> in
                 do {
                     return try hook.init(event: event)
-                    .handleEvent(on: worker)
-                    .catch { print($0) }
+                        .handleEvent(on: worker)
+                        .catch { print($0) }
                 }
                 catch {
                     print(error)
@@ -40,7 +40,7 @@ extension EventService: Service { }
 
 protocol EventHook {
     
-    init(event: Event)
+    init(event: Event) throws
     
     func handleEvent(on worker: Container) throws -> Future<Event>
 }

@@ -16,6 +16,9 @@ protocol UserCommand {
     /// User-friendly description used in the help dialog to describe the command
     static var description: String { get }
     
+    /// Should the command be hidden from the `help` screen
+    static var isHidden: Bool { get }
+    
     /// This command is expected to have this number of words, excluding the command
     static var commandLength: CommandLength { get }
     
@@ -29,4 +32,11 @@ protocol UserCommand {
     /// - Parameter container: Container from which the command is running
     /// - Returns: Response seen by the user
     func reply(using container: Container) throws -> Future<Reply>
+}
+
+extension UserCommand {
+    
+    static var isHidden: Bool {
+        return false
+    }
 }

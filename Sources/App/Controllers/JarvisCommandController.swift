@@ -29,8 +29,6 @@ final class JarvisCommandController: RouteCollection {
     /// - Throws: Vapor-specific errors
     func handleCommand(_ request: Request) throws -> Future<Reply> {
         
-        print(request)
-        
         return try request.content.decode(UserCommandRequest.self)
             
             // Validate & Parse Command
