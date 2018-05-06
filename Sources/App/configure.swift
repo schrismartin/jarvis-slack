@@ -27,6 +27,8 @@ public func configure(
     commandService.register(command: InspireCommand.self)
     commandService.register(command: IdentifyCommand.self)
     commandService.register(command: UpvotesCommand.self)
+    commandService.register(command: SentimentCommand.self)
+    commandService.register(command: PingCommand.self)
     commandService.register(command: HelpCommand.self)
     services.register(commandService)
     
@@ -37,6 +39,7 @@ public func configure(
     /// Register EventService
     let eventService = EventService()
     eventService.register(hook: VoteHook.self)
+    eventService.register(hook: SentimentHook.self)
     services.register(eventService)
     
     /// Register Upvotes
@@ -70,6 +73,7 @@ fileprivate func configureDatabase(using env: Environment, for services: inout S
     migrations.add(model: Channel.self, database: .psql)
     migrations.add(model: Event.self, database: .psql)
     migrations.add(model: Upvote.self, database: .psql)
+    migrations.add(model: Sentiment.self, database: .psql)
     services.register(migrations)
 }
 

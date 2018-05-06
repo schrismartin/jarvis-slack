@@ -22,8 +22,15 @@ class EventService {
         let future = Future.map(on: worker) { event }
         return registeredHooks.reduce(future) { (future, hook) -> Future<Event> in
             future.flatMap(to: Event.self) { (event) -> Future<Event> in
-                do { return try hook.init(event: event).handleEvent(on: worker) }
-                catch { return Future.map(on: worker) { event } }
+                do {
+                    return try hook.init(event: event)
+                    .handleEvent(on: worker)
+                    .catch { print($0) }
+                }
+                catch {
+                    print(error)
+                    return Future.map(on: worker) { event }
+                }
             }
         }
     }

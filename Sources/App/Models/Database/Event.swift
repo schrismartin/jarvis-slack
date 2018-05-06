@@ -37,6 +37,11 @@ final class Event: Codable {
         
         return parent(\.channelID)
     }
+    
+    var sentiment: Children<Event, Sentiment> {
+        
+        return children(\.eventID)
+    }
 }
 
 extension Event {

@@ -20,6 +20,6 @@ extension GetUsersRequest: ContentClientRequest {
     }
     
     static var destination: URLRepresentable {
-        return "https://slack.com/api/users.list"
+        return Constants.URLs.slackUsers
     }
 }
