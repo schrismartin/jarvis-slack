@@ -10,18 +10,57 @@ import Vapor
 import Fluent
 import FluentPostgreSQL
 
-final class Sentiment: Codable {
+protocol SentimentRepresentable {
+    
+    var polarity: Double { get }
+    var polarityConfidence: Double { get }
+    var objectivity: Double { get }
+    var objectivityConfidence: Double { get }
+}
+
+extension SentimentRepresentable {
+    
+    var polarityDifferential: Double {
+        return 1 - polarityConfidence
+    }
+    
+    var objectivityDifferential: Double {
+        return 1 - objectivityConfidence
+    }
+}
+
+final class Sentiment: Codable, SentimentRepresentable {
 
     var id: Int?
     var eventID: Event.ID
-    var positivity: Double
+    var polarity: Double
+    var polarityConfidence: Double
     var objectivity: Double
+    var objectivityConfidence: Double
     
-    init(event: Event, positivity: Double, objectivity: Double) throws {
+    enum CodingKeys: String, CodingKey {
+        
+        case id
+        case eventID = "event_id"
+        case polarity
+        case polarityConfidence = "polarity_confidence"
+        case objectivity
+        case objectivityConfidence = "objectivity_confidence"
+    }
+    
+    init(
+        event: Event,
+        polarity: SentimentPolarity,
+        polarityConfidence: Double,
+        objectivity: SentimentSubjectivity,
+        objectivityConfidence: Double
+    ) throws {
         
         self.eventID = try event.requireID()
-        self.positivity = positivity
-        self.objectivity = objectivity
+        self.polarity = Double(polarity.polarity)
+        self.polarityConfidence = polarityConfidence
+        self.objectivity = Double(objectivity.polarity)
+        self.objectivityConfidence = objectivityConfidence
     }
 }
 
@@ -41,8 +80,10 @@ extension Sentiment {
         
         try self.init(
             event: event,
-            positivity: sentimentResponse.positivity,
-            objectivity: sentimentResponse.objectivity
+            polarity: sentimentResponse.polarity,
+            polarityConfidence: sentimentResponse.polarityConfidence,
+            objectivity: sentimentResponse.subjectivity,
+            objectivityConfidence: sentimentResponse.subjectivityConfidence
         )
     }
 }
@@ -71,13 +112,19 @@ extension Sentiment {
     static func averagePositivity(for user: User, on worker: Container) throws -> Future<Double> {
         
         return try sentimentQuery(for: user, on: worker)
-            .flatMap(to: Double.self) { try $0.average(\.positivity) }
+            .flatMap(to: Double.self) { try $0.average(\.polarity) }
     }
     
     static func averageObjectivity(for user: User, on worker: Container) throws -> Future<Double> {
         
         return try sentimentQuery(for: user, on: worker)
             .flatMap(to: Double.self) { try $0.average(\.objectivity) }
+    }
+    
+    static func numberOfEntries(for user: User, on worker: Container) throws -> Future<Int> {
+        
+        return try sentimentQuery(for: user, on: worker)
+            .flatMap(to: Int.self) { $0.count() }
     }
 }
 
@@ -91,3 +138,22 @@ extension Sentiment {
 
 extension Sentiment: PostgreSQLModel { }
 extension Sentiment: Migration { }
+
+extension Array: SentimentRepresentable where Array.Element: SentimentRepresentable {
+    
+    var polarity: Double {
+        return (try? map { $0.polarity }.averaged()) ?? 0
+    }
+    
+    var polarityConfidence: Double {
+        return (try? map { $0.polarityConfidence }.averaged()) ?? 0
+    }
+    
+    var objectivity: Double {
+        return (try? map { $0.objectivity }.averaged()) ?? 0
+    }
+    
+    var objectivityConfidence: Double {
+        return (try? map { $0.objectivityConfidence }.averaged()) ?? 0
+    }
+}

@@ -35,8 +35,6 @@ final class EventController: BaseController, RouteCollection {
     
     func challenge(_ req: Request) throws -> Future<String> {
         
-        print(req)
-        
         return try req.content
             .decode(Challenge.self)
             .map(to: String.self) {
