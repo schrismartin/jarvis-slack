@@ -1,20 +1,31 @@
-<p align="center">
-    <img src="https://user-images.githubusercontent.com/1342803/36623515-7293b4ec-18d3-11e8-85ab-4e2f8fb38fbd.png" width="320" alt="API Template">
-    <br>
-    <br>
-    <a href="http://docs.vapor.codes/3.0/">
-        <img src="http://img.shields.io/badge/read_the-docs-2196f3.svg" alt="Documentation">
-    </a>
-    <a href="http://vapor.team">
-        <img src="http://vapor.team/badge.svg" alt="Slack Team">
-    </a>
-    <a href="LICENSE">
-        <img src="http://img.shields.io/badge/license-MIT-brightgreen.svg" alt="MIT License">
-    </a>
-    <a href="https://circleci.com/gh/vapor/api-template">
-        <img src="https://circleci.com/gh/vapor/api-template.svg?style=shield" alt="Continuous Integration">
-    </a>
-    <a href="https://swift.org">
-        <img src="http://img.shields.io/badge/swift-4.1-brightgreen.svg" alt="Swift 4.1">
-    </a>
-</center>
+# 🎩 Jarvis
+Jarvis is a bot made with the intention of providing additonal functionality to Slack. 
+
+## 📖 Documentation
+
+You can check out the documentation for this project by visiting [here](http://schrismart.in/jarvis-slack).
+
+## 📱 Usage
+
+Currently, the bot will respond to the following commands: 
+
+* `jarvis echo [message]` – Jarvis will respond to the group with "Echo: [message]".
+* `jarvis info messages` – Jarvis will tell how many messages the group has sent
+* `jarvis info members` – Jarvis will tell about how many people are in the group.
+* `jarvis info age` – Jarvis will respond with the created date of the group.
+
+/jarvis {command} {arguments}
+   • `jarvis echo [message]` – _Echo your message back to you._
+   • `jarvis compliment @user` –  _Create a compliment for yourself, or direct it at the specified user._
+   • `jarvis burn @user` –  _Insult yourself, or direct it at the specified user._
+   • `jarvis inspire` –  _Create an AI-generated inspirational poster!_
+   • `jarvis identify` –  _Returns information on the sender_
+   • `jarvis upvotes @user` –  _Shows you the number of upvotes you currently have._
+   • `jarvis ping` –  _Pings the server to ensure it's active._
+   • `jarvis gelp` –  _Get help on how to use Jarvis_
+
+More commands are being added occasionally. Check back for an updated list. 
+
+## 🔧 Building
+
+This part is under construction.
