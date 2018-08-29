@@ -28,4 +28,31 @@ More commands are being added occasionally. Check back for an updated list.
 
 ## 🔧 Building
 
-This part is under construction.
+Jarvis should be built and run using the [Vapor CLI](https://docs.vapor.codes/3.0/getting-started/toolbox/).
+
+```shell
+$ vapor run
+```
+
+Generating an xcode project is relatively simple using the Vapor CLI as well.
+
+```shell
+$ vapor xcode
+```
+
+This will generate an xcode project with the necessary targets set up. To run, just build and run the `Run` target.
+
+## 💻 Environment Variables
+You will need to set up the following environment variables in order to get full functionality of the project:
+
+##### General
+- `DATABASE_URL`: This will need to point to a postgress database used to cache event and user data.
+
+##### Slack
+- `BOT_TOKEN`: This is the token for the bot in the Slack app
+- `SLACK_TOKEN`: This is an additional token used to authorize the bot with Slack.
+
+##### Sentiment Analysis
+Jarvis makes use of the [AYLIEN](https://docs.aylien.com) Text Analysis API to perform sentiment analysis on user messages. If you wish to use this feature, you will need need the following keys:
+- `SENTIMENT_APP_ID`: The id for the account linked to use the API
+- `SENTIMENT_API_KEY`: The API key to authorize requests
