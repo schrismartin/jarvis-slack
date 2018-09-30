@@ -36,7 +36,7 @@ public func configure(
     services.register(middlewares)
     
     /// Pool Config
-    let poolConfig = DatabaseConnectionPoolConfig(maxConnections: 15)
+    let poolConfig = DatabaseConnectionPoolConfig(maxConnections: 2)
     services.register(poolConfig)
     
     /// Content Config
