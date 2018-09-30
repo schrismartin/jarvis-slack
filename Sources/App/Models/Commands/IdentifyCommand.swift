@@ -35,6 +35,7 @@ struct IdentifyCommand: UserCommand {
             return User.query(on: connection)
                 .filter(\User.id == self.sender)
                 .first()
+                .always { try? container.releasePooledConnection(connection, to: .psql) }
         }
         .map(to: Reply.self) {
             let tag = UserTag(

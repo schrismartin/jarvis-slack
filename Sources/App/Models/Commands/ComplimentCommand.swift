@@ -42,6 +42,7 @@ struct ComplimentCommand: UserCommand {
             User.query(on: connection)
                 .filter(\User.id == self.target.userID)
                 .first()
+                .always { try? container.releasePooledConnection(connection, to: .psql) }
         }
         .unwrap(or: UserCommandError.optionalUnwrappingError())
         .map(to: Reply.self) {

@@ -100,6 +100,7 @@ extension Sentiment {
                 .map(to: QueryBuilder<PostgreSQLDatabase, Sentiment>.self) { ids in
                     Sentiment.query(on: conn).filter(\Sentiment.eventID ~~ ids)
                 }
+                .always { try? worker.releasePooledConnection(conn, to: .psql) }
         }
     }
     
