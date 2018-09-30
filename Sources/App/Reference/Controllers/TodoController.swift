@@ -8,7 +8,6 @@ final class TodoController: RouteCollection {
         let todoGroup = router.grouped("api", "todo")
         todoGroup.get(use: index)
         todoGroup.post(use: create)
-        todoGroup.delete(use: delete)
     }
     
     /// Returns a list of all `Todo`s.
@@ -21,12 +20,5 @@ final class TodoController: RouteCollection {
         return try req.content.decode(Todo.self).flatMap(to: Todo.self) { todo in
             return todo.save(on: req)
         }
-    }
-
-    /// Deletes a parameterized `Todo`.
-    func delete(_ req: Request) throws -> Future<HTTPStatus> {
-        return try req.parameter(Todo.self).flatMap(to: Void.self) { todo in
-            return todo.delete(on: req)
-        }.transform(to: .ok)
     }
 }

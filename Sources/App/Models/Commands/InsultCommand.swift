@@ -12,7 +12,7 @@ import Fluent
 struct InsultCommand: UserCommand {
     
     static var keyword: String {
-        return "burn"
+        return "roast"
     }
     
     static var description: String {
@@ -38,17 +38,17 @@ struct InsultCommand: UserCommand {
         
         let generator = try container.make(InsultGenerator.self)
         
-        return container.newConnection(to: .psql)
-            .flatMap(to: User?.self) {
-                try $0.query(User.self)
-                    .filter(\User.id == self.target.userID)
-                    .first()
-            }
-            .map(to: Reply.self) {
-                Reply(
-                    text: try generator.generateInsult(for: $0),
-                    replyType: .inChannel
-                )
-            }
+        return container.withPooledConnection(to: .psql) { connection in
+            User.query(on: connection)
+                .filter(\User.id == self.target.userID)
+                .first()
+                .always { try? container.releasePooledConnection(connection, to: .psql) }
+        }
+        .map(to: Reply.self) {
+            Reply(
+                text: try generator.generateInsult(for: $0),
+                replyType: .inChannel
+            )
+        }
     }
 }

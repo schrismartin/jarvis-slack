@@ -71,6 +71,7 @@ extension Sentiment {
         
         let client = try worker.make(Client.self)
         let request = GetSentimentRequest(from: event)
+        
         return try client.send(request: request)
             .flatMap(to: SentimentResponse.self) { try $0.content.decode(SentimentResponse.self) }
             .map(to: Sentiment.self) { try Sentiment(for: event, using: $0) }
@@ -91,15 +92,14 @@ extension Sentiment {
 // MARK: - Queries
 extension Sentiment {
     
-    private static func sentimentQuery(for user: User, on worker: Container) throws -> Future<QueryBuilder<Sentiment, Sentiment>> {
+    private static func sentimentQuery(for user: User, on worker: Container) throws -> Future<QueryBuilder<PostgreSQLDatabase, Sentiment>> {
         
         return worker.withPooledConnection(to: .psql) { conn in
             try user.events.query(on: conn).all()
                 .map(to: [Event.ID].self) { $0.compactMap { $0.id } }
-                .map(to: QueryBuilder<Sentiment, Sentiment>.self) { ids in
-                    try conn.query(Sentiment.self)
-                        .filter(\Sentiment.eventID ~~ ids)
-            }
+                .map(to: QueryBuilder<PostgreSQLDatabase, Sentiment>.self) { ids in
+                    Sentiment.query(on: conn).filter(\Sentiment.eventID ~~ ids)
+                }
         }
     }
     
@@ -112,13 +112,13 @@ extension Sentiment {
     static func averagePositivity(for user: User, on worker: Container) throws -> Future<Double> {
         
         return try sentimentQuery(for: user, on: worker)
-            .flatMap(to: Double.self) { try $0.average(\.polarity) }
+            .flatMap(to: Double.self) { $0.average(\.polarity) }
     }
     
     static func averageObjectivity(for user: User, on worker: Container) throws -> Future<Double> {
         
         return try sentimentQuery(for: user, on: worker)
-            .flatMap(to: Double.self) { try $0.average(\.objectivity) }
+            .flatMap(to: Double.self) { $0.average(\.objectivity) }
     }
     
     static func numberOfEntries(for user: User, on worker: Container) throws -> Future<Int> {

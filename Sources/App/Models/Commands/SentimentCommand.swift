@@ -42,7 +42,10 @@ struct SentimentCommand: UserCommand {
     
     func reply(using container: Container) throws -> Future<Reply> {
         
-        return container.withPooledConnection(to: .psql) { try User.fetch(with: self.targetUser, on: $0) }
+        return container.withPooledConnection(to: .psql) { connection in
+            try User.fetch(with: self.targetUser, on: connection)
+                .always { try? container.releasePooledConnection(connection, to: .psql) }
+            }
             .flatMap(to: String.self) { user in
                 
                 try Sentiment.allSentiments(for: user, on: container)

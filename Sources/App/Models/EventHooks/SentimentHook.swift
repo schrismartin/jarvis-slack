@@ -27,6 +27,7 @@ struct SentimentHook: EventHook {
         return worker.withPooledConnection(to: .psql) { conn in
             try Sentiment.create(for: self.event, on: worker)
                 .save(on: conn)
+                .always { try? worker.releasePooledConnection(conn, to: .psql) }
         }
         .transform(to: event)
     }

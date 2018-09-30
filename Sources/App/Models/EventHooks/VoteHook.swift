@@ -39,6 +39,7 @@ struct VoteHook: EventHook {
             let messageResponse = try self.sendResponse(onCompletionOf: targetUser, and: upvote, on: worker)
             
             return messageResponse.transform(to: self.event)
+                .always { try? worker.releasePooledConnection(conn, to: .psql) }
         }
             
         .catchFlatMap { error in
@@ -79,6 +80,7 @@ struct VoteHook: EventHook {
                     try SlackMessage(text: insult, channelID: self.event.channelID)
                         .send(on: worker)
                 }
+                .always { try? worker.releasePooledConnection(conn, to: .psql) }
         }
     }
 }

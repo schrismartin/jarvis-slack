@@ -15,6 +15,7 @@ final class Upvote: Codable {
     var sender: User.ID
     var target: User.ID
     var count: Int
+    var timestamp: Date
     
     init(sender: User.ID, target: User.ID, count: Int = 0) throws {
         
@@ -25,6 +26,7 @@ final class Upvote: Codable {
         self.sender = sender
         self.target = target
         self.count = count
+        self.timestamp = Date()
     }
     
     var targetUser: Parent<Upvote, User> {

@@ -24,7 +24,7 @@ extension PostgreSQLDatabaseConfig {
                 reason: "Config could not be parsed",
                 possibleCauses: ["Foundation URL is unable to parse the provided connection string"],
                 suggestedFixes: ["Check the connection string being passed"],
-                source: .capture()
+                file: #file
             )
         }
         

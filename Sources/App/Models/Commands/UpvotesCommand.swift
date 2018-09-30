@@ -50,6 +50,7 @@ struct UpvotesCommand: UserCommand {
             return map(to: Reply.self, user, upvoteCount) { (user, count) in
                 Reply(text: "\(user.realName): \(count)")
             }
+            .always { try? container.releasePooledConnection(conn, to: .psql) }
         }
     }
 }

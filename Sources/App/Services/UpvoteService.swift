@@ -23,6 +23,7 @@ class UpvoteService: Service {
             
             try user.upvotes.query(on: conn).all()
                 .map(to: Int.self) { $0.map { $0.count }.reduce(0, +) }
+                .always { try? worker.releasePooledConnection(conn, to: .psql) }
         }
     }
     
@@ -30,8 +31,8 @@ class UpvoteService: Service {
         
         return worker.withPooledConnection(to: .psql) { conn in
             try User.fetch(with: userID, on: conn)
+                .always { try? worker.releasePooledConnection(conn, to: .psql) }
         }
-            
         .flatMap(to: Int.self) { user in
             try self.countUpvotes(for: user, on: worker)
         }

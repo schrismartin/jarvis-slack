@@ -9,17 +9,12 @@ import Foundation
 import FluentPostgreSQL
 import Vapor
 
-enum EventType: String, Codable, ReflectionDecodable, PostgreSQLColumnStaticRepresentable {
+enum EventType: String, Codable, ReflectionDecodable {
     
     case message
     case other
     
     static func reflectDecoded() throws -> (EventType, EventType) {
         return (.message, .other)
-    }
-    
-    static var postgreSQLColumn: PostgreSQLColumn {
-        
-        return PostgreSQLColumn(type: .text)
     }
 }

@@ -96,9 +96,9 @@ extension User: Model {
 
 extension User {
     
-    static func fetch(with id: User.ID, on conn: PostgreSQLConnection) throws -> Future<User> {
+    static func fetch(with id: User.ID, on conn: PostgreSQLConnection) -> Future<User> {
         
-        return try conn.query(User.self)
+        return User.query(on: conn)
             .filter(\User.id == id)
             .first()
             .unwrap(or: UserCommandError.optionalUnwrappingError())

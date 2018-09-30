@@ -19,37 +19,25 @@ public func configure(
     try routes(router)
     services.register(router, as: Router.self)
     
-    /// Register CommandService
-    let commandService = CommandService()
-    commandService.register(command: EchoCommand.self)
-    commandService.register(command: ComplimentCommand.self)
-    commandService.register(command: InsultCommand.self)
-    commandService.register(command: InspireCommand.self)
-    commandService.register(command: IdentifyCommand.self)
-    commandService.register(command: UpvotesCommand.self)
-    commandService.register(command: SentimentCommand.self)
-    commandService.register(command: PingCommand.self)
-    commandService.register(command: HelpCommand.self)
-    services.register(commandService)
+    registerCommands(using: &services)
     
     /// Register Command-related Services
     services.register(ComplimentGenerator())
     services.register(InsultGenerator())
     
-    /// Register EventService
-    let eventService = EventService()
-    eventService.register(hook: VoteHook.self)
-    eventService.register(hook: SentimentHook.self)
-    services.register(eventService)
+    registerEventService(using: &services)
     
     /// Register Upvotes
     services.register(UpvoteService())
     
     /// Register middleware
     var middlewares = MiddlewareConfig()
-    middlewares.use(DateMiddleware.self)
     middlewares.use(ErrorMiddleware.self)
     services.register(middlewares)
+    
+    /// Pool Config
+    let poolConfig = DatabaseConnectionPoolConfig(maxConnections: 15)
+    services.register(poolConfig)
     
     /// Content Config
     var contentConfig = ContentConfig.default()
@@ -59,6 +47,14 @@ public func configure(
     services.register(contentConfig)
 
     try configureDatabase(using: env, for: &services)
+}
+
+fileprivate func registerEventService(using services: inout Services) {
+    
+    let eventService = EventService()
+    eventService.register(hook: VoteHook.self)
+    eventService.register(hook: SentimentHook.self)
+    services.register(eventService)
 }
 
 fileprivate func configureDatabase(using env: Environment, for services: inout Services) throws {
@@ -75,6 +71,21 @@ fileprivate func configureDatabase(using env: Environment, for services: inout S
     migrations.add(model: Upvote.self, database: .psql)
     migrations.add(model: Sentiment.self, database: .psql)
     services.register(migrations)
+}
+
+fileprivate func registerCommands(using services: inout Services) {
+    
+    let commandService = CommandService()
+    commandService.register(command: EchoCommand.self)
+    commandService.register(command: ComplimentCommand.self)
+    commandService.register(command: InsultCommand.self)
+    commandService.register(command: InspireCommand.self)
+    commandService.register(command: IdentifyCommand.self)
+    commandService.register(command: UpvotesCommand.self)
+    commandService.register(command: SentimentCommand.self)
+    commandService.register(command: PingCommand.self)
+    commandService.register(command: HelpCommand.self)
+    services.register(commandService)
 }
 
 fileprivate func createDatabase(for env: Environment) throws -> PostgreSQLDatabase {

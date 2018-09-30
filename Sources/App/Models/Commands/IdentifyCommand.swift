@@ -31,8 +31,8 @@ struct IdentifyCommand: UserCommand {
     
     func reply(using container: Container) throws -> Future<Reply> {
         
-        return container.withNewConnection(to: .psql) { connection -> Future<User?> in
-            return try connection.query(User.self)
+        return container.withPooledConnection(to: .psql) { connection -> Future<User?> in
+            return User.query(on: connection)
                 .filter(\User.id == self.sender)
                 .first()
         }

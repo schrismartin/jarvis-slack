@@ -49,7 +49,7 @@ extension Client {
                 Request.method,
                 headers: Request.headers,
                 to: Request.destination,
-                content: request
+                beforeSend: { try $0.content.encode(request) }
             )
         }
     }

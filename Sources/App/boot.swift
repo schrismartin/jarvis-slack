@@ -17,9 +17,11 @@ func fetchUsers(using app: Application) throws -> Future<[User]> {
     let request = GetUsersRequest(token: token)
     
     return app.withPooledConnection(to: .psql) { connection -> Future<[User]> in
+        
         return try client.send(request: request)
             .flatMap(to: [User].self) { $0.content.get([User].self, at: "members") }
             .map(to: [Future<User>].self) { $0.map { $0.create(on: connection) } }
             .flatMap(to: [User].self) { $0.flatten(on: app) }
+            .always { try? app.releasePooledConnection(connection, to: .psql) }
     }
 }
